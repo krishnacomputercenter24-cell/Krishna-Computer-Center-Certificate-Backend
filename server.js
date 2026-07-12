@@ -35,10 +35,14 @@ app.use('/api/courses',      require('./routes/courses'));
 app.use('/api/certificates', require('./routes/certificates'));
 app.get('/api/health', (_, res) => res.json({ status: 'OK', message: 'KCC API running' }));
 
+const PORT = process.env.PORT || 5000;
 mongoose.connect(process.env.MONGO_URI)
-  .then(async () => {
+  .then(() => {
     console.log('✅  MongoDB connected');
 
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+    });
     const bcrypt  = require('bcryptjs');
     const Admin   = require('./models/Admin');
     const Course  = require('./models/Course');
@@ -69,6 +73,3 @@ mongoose.connect(process.env.MONGO_URI)
     }
   })
   .catch(err => console.error('❌  MongoDB error:', err));
-
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀  Server running on http://localhost:${PORT}`));
