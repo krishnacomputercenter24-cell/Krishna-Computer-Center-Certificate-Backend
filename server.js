@@ -36,40 +36,108 @@ app.use('/api/certificates', require('./routes/certificates'));
 app.get('/api/health', (_, res) => res.json({ status: 'OK', message: 'KCC API running' }));
 
 const PORT = process.env.PORT || 5000;
+// mongoose.connect(process.env.MONGO_URI)
+//   .then(() => {
+//     console.log('✅  MongoDB connected');
+
+//     app.listen(PORT, () => {
+//       console.log(`🚀 Server running on port ${PORT}`);
+//     });
+//     const bcrypt  = require('bcryptjs');
+//     const Admin   = require('./models/Admin');
+//     const Course  = require('./models/Course');
+
+//     if (!(await Admin.findOne({ email: process.env.ADMIN_EMAIL }))) {
+//       await Admin.create({
+//         name: 'Admin',
+//         email: process.env.ADMIN_EMAIL,
+//         password: await bcrypt.hash(process.env.ADMIN_PASSWORD, 10),
+//       });
+//       console.log('✅  Default admin seeded:', process.env.ADMIN_EMAIL);
+//     }
+
+//     if ((await Course.countDocuments()) === 0) {
+//       await Course.insertMany([
+//         { name: 'Basic Computer Course',          code: 'BCC', duration: '3 Months' },
+//         { name: 'Diploma in Computer Application', code: 'DCA', duration: '6 Months'   },
+//         { name: 'Advanced Diploma Computer Course',        code: 'ADCC', duration: '1 Year' },
+//         { name: 'Tally Prime Course',               code: 'TPC', duration: '3 Months' },
+//         // { name: 'Web Design & Development',        code: 'WDD', duration: '6 Months' },
+//         // { name: 'Cyber Security Basics',           code: 'CSB', duration: '2 Months' },
+//         // { name: 'Digital Marketing',               code: 'DM',  duration: '3 Months' },
+//         // { name: 'Programming in C/C++',            code: 'PCC', duration: '4 Months' },
+//         // { name: 'Python Programming',              code: 'PY',  duration: '4 Months' },
+//         // { name: 'Hardware & Networking',           code: 'HN',  duration: '6 Months' },
+//       ]);
+//       console.log('✅  Courses seeded');
+//     }
+//   })
+//   .catch(err => console.error('❌  MongoDB error:', err));
+const PORT = process.env.PORT || 5000;
+
 mongoose.connect(process.env.MONGO_URI)
-  .then(() => {
-    console.log('✅  MongoDB connected');
+  .then(async () => {
+    console.log('✅ MongoDB connected');
 
-    app.listen(PORT, () => {
-      console.log(`🚀 Server running on port ${PORT}`);
+    const bcrypt = require('bcryptjs');
+    const Admin = require('./models/Admin');
+    const Course = require('./models/Course');
+
+    // Seed Admin
+    const existingAdmin = await Admin.findOne({
+      email: process.env.ADMIN_EMAIL
     });
-    const bcrypt  = require('bcryptjs');
-    const Admin   = require('./models/Admin');
-    const Course  = require('./models/Course');
 
-    if (!(await Admin.findOne({ email: process.env.ADMIN_EMAIL }))) {
+    if (!existingAdmin) {
       await Admin.create({
         name: 'Admin',
         email: process.env.ADMIN_EMAIL,
         password: await bcrypt.hash(process.env.ADMIN_PASSWORD, 10),
       });
-      console.log('✅  Default admin seeded:', process.env.ADMIN_EMAIL);
+
+      console.log(
+        '✅ Default admin seeded:',
+        process.env.ADMIN_EMAIL
+      );
     }
 
-    if ((await Course.countDocuments()) === 0) {
+
+    // Seed Courses
+    const courseCount = await Course.countDocuments();
+
+    if (courseCount === 0) {
       await Course.insertMany([
-        { name: 'Basic Computer Course',          code: 'BCC', duration: '3 Months' },
-        { name: 'Diploma in Computer Application', code: 'DCA', duration: '6 Months'   },
-        { name: 'Advanced Diploma Computer Course',        code: 'ADCC', duration: '1 Year' },
-        { name: 'Tally Prime Course',               code: 'TPC', duration: '3 Months' },
-        // { name: 'Web Design & Development',        code: 'WDD', duration: '6 Months' },
-        // { name: 'Cyber Security Basics',           code: 'CSB', duration: '2 Months' },
-        // { name: 'Digital Marketing',               code: 'DM',  duration: '3 Months' },
-        // { name: 'Programming in C/C++',            code: 'PCC', duration: '4 Months' },
-        // { name: 'Python Programming',              code: 'PY',  duration: '4 Months' },
-        // { name: 'Hardware & Networking',           code: 'HN',  duration: '6 Months' },
+        {
+          name: 'Basic Computer Course',
+          code: 'BCC',
+          duration: '3 Months'
+        },
+        {
+          name: 'Diploma in Computer Application',
+          code: 'DCA',
+          duration: '6 Months'
+        },
+        {
+          name: 'Advanced Diploma Computer Course',
+          code: 'ADCC',
+          duration: '1 Year'
+        },
+        {
+          name: 'Tally Prime Course',
+          code: 'TPC',
+          duration: '3 Months'
+        }
       ]);
-      console.log('✅  Courses seeded');
+
+      console.log('✅ Courses seeded');
     }
+
+
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+    });
+
   })
-  .catch(err => console.error('❌  MongoDB error:', err));
+  .catch((err) => {
+    console.error('❌ MongoDB error:', err);
+  });
